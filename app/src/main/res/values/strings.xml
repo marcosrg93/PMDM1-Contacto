@@ -1,4 +1,14 @@
 <resources>
-    <string name="app_name">PMDM(Contacto)</string>
+    <string name="app_name">Contacto</string>
     <string name="action_settings">Settings</string>
+
+
+
+    //Menu principal
+    <string name="str_ordenarMayor">Ordenar (Asc)</string>
+    <string name="str_ordenarMenor">Ordenar (Des)</string>
+    //Menu Contextual
+    <string name="str_editar">Editar</string>
+    <string name="str_borrar">Borrar</string>
+
 </resources>
