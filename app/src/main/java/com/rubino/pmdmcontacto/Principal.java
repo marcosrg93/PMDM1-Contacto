@@ -8,9 +8,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ContextMenu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -19,12 +22,15 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.support.v4.view.ViewCompat.animate;
+
 public class Principal extends AppCompatActivity {
 
     private ClaseAdaptador cl;
-    private List<String> listaC;
-    private List<String> listaN;
-
+    private AdaptadorContacto cl2;
+    private List<String> lista;
+    private List<Contacto> lista2;
+    private FloatingActionButton fab;
 
 
     @Override
@@ -34,14 +40,7 @@ public class Principal extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
         init();
     }
 
@@ -67,82 +66,104 @@ public class Principal extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //Creamos el menu contextual que nos dará las opciones de editar y borrar de cada Contacto
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.contextual, menu);
+
+    }
+    //Damos funcionalidad al los elementos del menu contextual
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        long id = item.getItemId();
+        AdapterView.AdapterContextMenuInfo vistaInfo =
+                (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        int posicion = vistaInfo.position;
+        if(id==R.id.mn_editar){
+            return true;
+        } else if(id==R.id.mn_borrar){
+            cl.borrar(posicion);
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    //Inicializamos todos los componentes que llamaremos en el onCreate
+    private void init() {
+        //Floating Action Button
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
+        //Comprobamos la posicion para que se muestre o no
+        OnScrollUpDownListener.Action scrollAction = new OnScrollUpDownListener.Action() {
+
+            @Override
+            public void up() {
+                fab.hide();
+            }
+
+            @Override
+            public void down() {
+                fab.show();
+            }
+
+        };
 
 
 
 
-    private void init(){
         final ListView lv = (ListView) findViewById(R.id.lvContactos);
-        listaC = new ArrayList<>();
-        listaC.add("Pepe");
-        listaC.add("Juan");
-        listaC.add("Pepe");
-        listaC.add("Juana");
-        listaC.add("Juana1");
-        listaC.add("Juana2");
-        listaC.add("Juana3");
-        listaC.add("Juana4");
-        listaC.add("Juana5");
-        listaC.add("Juana7");
-        listaC.add("Juana8");
-        listaC.add("Juana9");
-        listaC.add("Juana12");
-        listaC.add("Juan342");
-        listaC.add("Juanare");
-        listaC = new ArrayList<>();
+        lista2 = new ArrayList<>();
+        lista2 = getListaContactos();
 
 
-
-
-        cl = new ClaseAdaptador(this, R.layout.elementos_lv,listaC);
-        lv.setAdapter(cl);
-        lv.setTag(listaC);
+        cl2 = new AdaptadorContacto(this, R.layout.elementos_lv, lista2);
+        lv.setAdapter(cl2);
+        lv.setTag(lista2);
+        lv.setOnScrollListener(new OnScrollUpDownListener(lv, 8, scrollAction));
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String dato = (String) lv.getItemAtPosition(position);
-                //dato = ((String[])lv.getTag())[position];
-                //dato = lista.get(position);
-                Toast.makeText(Principal.this, "Posicion: " + position + " " + dato, Toast.LENGTH_LONG).show();
-                //lista.remove(position);
-                //cl.notifyDataSetChanged();
-                //cl.remove(dato);
-                cl.borrar(position);
+                Snackbar.make(view, "Pulsado encima", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                //cl.borrar(position);
             }
         });
-        /*lv.setOnLongClickListener(new View.OnLongClickListener() {
+        lv.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 return false;
             }
-        });*/
-        ImageView iv = (ImageView)lv.findViewById(R.id.ivNum);
-        if(iv!=null){
-            iv.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    tostada(v);
+        });
 
-                }
-            });
-        }
+
         registerForContextMenu(lv);
 
     }
 
-    public List<Contacto> getListaContactos(){
+    public List<Contacto> getListaContactos() {
         Uri uri = ContactsContract.Contacts.CONTENT_URI;
         String proyeccion[] = null;
         String seleccion = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ? and " +
                 ContactsContract.Contacts.HAS_PHONE_NUMBER + "= ?";
-        String argumentos[] = new String[]{"1","1"};
+        String argumentos[] = new String[]{"1", "1"};
         String orden = ContactsContract.Contacts.DISPLAY_NAME + " collate localized asc";
         Cursor cursor = getContentResolver().query(uri, proyeccion, seleccion, argumentos, orden);
         int indiceId = cursor.getColumnIndex(ContactsContract.Contacts._ID);
         int indiceNombre = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
         List<Contacto> lista = new ArrayList<>();
         Contacto contacto;
-        while(cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             contacto = new Contacto();
             contacto.setId(cursor.getLong(indiceId));
             contacto.setNombre(cursor.getString(indiceNombre));
@@ -152,18 +173,17 @@ public class Principal extends AppCompatActivity {
     }
 
 
-
-    public List<String> getListaTelefonos(long id){
+    public List<String> getListaTelefonos(long id) {
         Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
         String proyeccion[] = null;
         String seleccion = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
-        String argumentos[] = new String[]{id+""};
+        String argumentos[] = new String[]{id + ""};
         String orden = ContactsContract.CommonDataKinds.Phone.NUMBER;
         Cursor cursor = getContentResolver().query(uri, proyeccion, seleccion, argumentos, orden);
         int indiceNumero = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
         List<String> lista = new ArrayList<>();
         String numero;
-        while(cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             numero = cursor.getString(indiceNumero);
             lista.add(numero);
         }
@@ -171,8 +191,4 @@ public class Principal extends AppCompatActivity {
     }
 
 
-
-    public void tostada(View v){
-        Toast.makeText(this, "Aqui se mostraran los detalles del contacto."+v.getTag(), Toast.LENGTH_LONG).show();
-    }
 }

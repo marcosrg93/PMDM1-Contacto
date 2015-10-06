@@ -12,28 +12,26 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import java.util.List;
 
-public class ClaseAdaptador extends ArrayAdapter<String>{
+public class AdaptadorContacto extends ArrayAdapter<Contacto>{
 
     private Context ctx;
     private int res;
     private LayoutInflater lInflator;
-    private List<String> valores;
-    private List<Contacto> valoresC;
+    private List<Contacto> valores;
 
     static class ViewHolder {
         public TextView tv1, tv2;
         public ImageView iv;
     }
 
-    public ClaseAdaptador(Context context, int resource, List<String> objects) {
+    public AdaptadorContacto(Context context, int resource, List<Contacto> objects) {
         super(context, resource, objects);
         this.ctx = context;//actividad
         this.res = resource;//layout del item
         this.valores = objects;//lista de valores
-
         this.lInflator = (LayoutInflater) context.getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -68,8 +66,8 @@ public class ClaseAdaptador extends ArrayAdapter<String>{
         }
         gv.iv.setTag(position);
         addListener(gv.iv, position);
-        gv.tv1.setText(valores.get(position));
-        gv.tv2.setText("lo otro "+valores.get(position));
+        gv.tv1.setText(valores.get(position).getNombre());
+        gv.tv2.setText("Tlf: "+valores.get(position).getTelf());
         return convertView;
     }
 
@@ -77,7 +75,7 @@ public class ClaseAdaptador extends ArrayAdapter<String>{
         iv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar.make(v, "Detalles del contacto"+position, Snackbar.LENGTH_LONG)
+                Snackbar.make(v, "flor "+position, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 //Toast.makeText(ctx, "flor "+position, Toast.LENGTH_LONG).show();
             }
