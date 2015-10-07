@@ -104,7 +104,7 @@ public class Principal extends AppCompatActivity {
         int posicion = vistaInfo.position;
 
         if(id==R.id.mn_editar){
-            dialogoEditar();
+
             return true;
         } else if(id==R.id.mn_borrar){
             cl.borrar(posicion);
@@ -199,23 +199,22 @@ public class Principal extends AppCompatActivity {
         alert.show();
     }
 
-    public  void dialogoEditar(){
+    public  void dialogoEditar( int posicion){
         AlertDialog.Builder alert= new AlertDialog.Builder(this);
         alert.setTitle(R.string.dial_Titulo);
-
 
         //cargamos contacto
         Contacto c = new Contacto();
         //cargamos vista
         LayoutInflater inflater= LayoutInflater.from(this);
-        final View vista = inflater.inflate(R.layout.dialogo_insert, null);
+        final View vista = inflater.inflate(R.layout.dialogo_edit, null);
         final EditText  et,et1;
         String nom,tel;
 
         nom=c.getNombre();
         tel=c.getTelf();
-        et = (EditText) vista.findViewById(R.id.etInsertN);
-        et1 = (EditText) vista.findViewById(R.id.etInsertT);
+        et = (EditText) vista.findViewById(R.id.editN);
+        et1 = (EditText) vista.findViewById(R.id.editTelf);
         Log.v(" Obtengo datos",""+c.toString());
         et.setText(nom);
         et1.setText(tel);
@@ -225,8 +224,8 @@ public class Principal extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         long id = lista.size()-1;
                         TextView et1, et2;
-                        et1 = (TextView) vista.findViewById(R.id.etInsertN);
-                        et2 = (TextView) vista.findViewById(R.id.etInsertT);
+                        et1 = (TextView) vista.findViewById(R.id.editN);
+                        et2 = (TextView) vista.findViewById(R.id.editTelf);
 
                         Contacto c = new Contacto(id,et1.getText().toString(), et2.getText().toString());
                         lista.add(c);
