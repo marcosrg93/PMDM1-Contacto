@@ -1,19 +1,29 @@
 package com.rubino.pmdmcontacto;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
+import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Principal extends AppCompatActivity {
@@ -50,14 +60,33 @@ public class Principal extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.mn_ordenaMayor) {
+            ordenaNombresAsc();
+            cl.notifyDataSetChanged();
+            cl = new AdaptadorContacto(Principal.this, R.layout.elementos_lv, lista);
+            ListView lv = (ListView) findViewById(R.id.lvContactos);
+            lv.setAdapter(cl);
+            return true;
+        }
+        if (id == R.id.mn_ordenaMenor) {
+            ordenaNombresDes();
+            cl.notifyDataSetChanged();
+            cl = new AdaptadorContacto(Principal.this, R.layout.elementos_lv, lista);
+            ListView lv = (ListView) findViewById(R.id.lvContactos);
+            lv.setAdapter(cl);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    public void ordenaNombresAsc(){
+        Collections.sort(lista, new OrdenaNombresAsc());
+    }
+
+    public void ordenaNombresDes(){
+        Collections.sort(lista, new OrdenaNombresDes());
+    }
     //Creamos el menu contextual que nos dará las opciones de editar y borrar de cada Contacto
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -73,7 +102,9 @@ public class Principal extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo vistaInfo =
                 (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
         int posicion = vistaInfo.position;
+
         if(id==R.id.mn_editar){
+            dialogoEditar();
             return true;
         } else if(id==R.id.mn_borrar){
             cl.borrar(posicion);
@@ -90,8 +121,7 @@ public class Principal extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                dialogo(view);
             }
         });
 
@@ -145,5 +175,80 @@ public class Principal extends AppCompatActivity {
 
     }
 
+    public  void dialogo(View v){
+        AlertDialog.Builder alert= new AlertDialog.Builder(this);
+        alert.setTitle(R.string.dial_Titulo);
+        LayoutInflater inflater= LayoutInflater.from(this);
+        final View vista = inflater.inflate(R.layout.dialogo_insert, null);
+        alert.setView(vista);
+        alert.setPositiveButton(R.string.dial_insert,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        long id = lista.size()-1;
+                        TextView et1, et2;
+                        et1 = (TextView) vista.findViewById(R.id.etInsertN);
+                        et2 = (TextView) vista.findViewById(R.id.etInsertT);
 
+                        Contacto c = new Contacto(id,et1.getText().toString(), et2.getText().toString());
+                        lista.add(c);
+                        cl.notifyDataSetChanged();
+                        Log.v("Inserto datos",""+c.toString());
+                    }
+                });
+        alert.setNegativeButton(R.string.dial_cancel, null);
+        alert.show();
+    }
+
+    public  void dialogoEditar(){
+        AlertDialog.Builder alert= new AlertDialog.Builder(this);
+        alert.setTitle(R.string.dial_Titulo);
+
+
+        //cargamos contacto
+        Contacto c = new Contacto();
+        //cargamos vista
+        LayoutInflater inflater= LayoutInflater.from(this);
+        final View vista = inflater.inflate(R.layout.dialogo_insert, null);
+        final EditText  et,et1;
+        String nom,tel;
+
+        nom=c.getNombre();
+        tel=c.getTelf();
+        et = (EditText) vista.findViewById(R.id.etInsertN);
+        et1 = (EditText) vista.findViewById(R.id.etInsertT);
+        Log.v(" Obtengo datos",""+c.toString());
+        et.setText(nom);
+        et1.setText(tel);
+        alert.setView(vista);
+        alert.setPositiveButton(R.string.dial_insert,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        long id = lista.size()-1;
+                        TextView et1, et2;
+                        et1 = (TextView) vista.findViewById(R.id.etInsertN);
+                        et2 = (TextView) vista.findViewById(R.id.etInsertT);
+
+                        Contacto c = new Contacto(id,et1.getText().toString(), et2.getText().toString());
+                        lista.add(c);
+                        cl.notifyDataSetChanged();
+                        Log.v(" EDITO datos",""+c.toString());
+                    }
+                });
+        alert.setNegativeButton(R.string.dial_cancel, null);
+        alert.show();
+    }
+
+
+
+
+
+
+
+    public Toast tostada(String t) {
+        Toast toast =
+                Toast.makeText(getApplicationContext(),
+                        t + "", Toast.LENGTH_SHORT);
+        toast.show();
+        return toast;
+    }
 }

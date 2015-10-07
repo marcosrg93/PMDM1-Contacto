@@ -3,23 +3,24 @@ package com.rubino.pmdmcontacto;
 
 public class Contacto {
 
-    private long id, telf;
-    private String nombre;
+    private long id;
+    private String nombre, telf;
 
     public Contacto() {
     }
 
-    public Contacto(long id, long telf, String nombre) {
+    public Contacto(long id, String nombre, String telf) {
         this.id = id;
-        this.telf = telf;
         this.nombre = nombre;
+        this.telf = telf;
     }
+
 
     public long getId() {
         return id;
     }
 
-    public long getTelf() {
+    public String getTelf() {
         return telf;
     }
 
@@ -31,13 +32,14 @@ public class Contacto {
         this.id = id;
     }
 
-    public void setTelf(long telf) {
+    public void setTelf(String telf) {
         this.telf = telf;
     }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -47,19 +49,19 @@ public class Contacto {
         Contacto contacto = (Contacto) o;
 
         if (id != contacto.id) return false;
-        if (telf != contacto.telf) return false;
-        return nombre.equals(contacto.nombre);
+        if (nombre != null ? !nombre.equals(contacto.nombre) : contacto.nombre != null)
+            return false;
+        return !(telf != null ? !telf.equals(contacto.telf) : contacto.telf != null);
 
     }
 
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (int) (telf ^ (telf >>> 32));
-        result = 31 * result + nombre.hashCode();
+        result = 31 * result + (nombre != null ? nombre.hashCode() : 0);
+        result = 31 * result + (telf != null ? telf.hashCode() : 0);
         return result;
     }
-
 
     @Override
     public String toString() {

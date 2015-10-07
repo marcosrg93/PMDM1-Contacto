@@ -40,7 +40,16 @@ public class AdaptadorContacto extends ArrayAdapter<Contacto>{
                 (Context.LAYOUT_INFLATER_SERVICE);
     }
 
-
+    public boolean editar(int position, Contacto cont) {
+        try {
+            valores.remove(position);
+            valores.add(cont);
+            this.notifyDataSetChanged();
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+        return true;
+    }
 
 
     public boolean borrar(int position) {

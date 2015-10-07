@@ -10,5 +10,11 @@
     //Menu Contextual
     <string name="str_editar">Editar</string>
     <string name="str_borrar">Borrar</string>
+    //Dialogo insertar
+    <string name="dial_Titulo">Añadir</string>
+    <string name="dial_nom">Nombre</string>
+    <string name="dial_tel">Telefono</string>
+    <string name="dial_insert">Insertar</string>
+    <string name="dial_cancel">Cancelar</string>
 
 </resources>
