@@ -24,8 +24,8 @@ public class ClaseAdaptador extends ArrayAdapter<String>{
     private List<Contacto> valoresC;
 
     static class ViewHolder {
-        public TextView tv1, tv2;
-        public ImageView iv;
+        public TextView tv2;
+
     }
 
     public ClaseAdaptador(Context context, int resource, List<String> objects) {
@@ -33,7 +33,6 @@ public class ClaseAdaptador extends ArrayAdapter<String>{
         this.ctx = context;//actividad
         this.res = resource;//layout del item
         this.valores = objects;//lista de valores
-
         this.lInflator = (LayoutInflater) context.getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -56,31 +55,15 @@ public class ClaseAdaptador extends ArrayAdapter<String>{
         ViewHolder gv = new ViewHolder();
         if(convertView==null){
             convertView = lInflator.inflate(res, null);
-            TextView tv = (TextView) convertView.findViewById(R.id.tvNombre);
-            gv.tv1 = tv;
-            tv = (TextView) convertView.findViewById(R.id.tvTelf);
+            TextView tv = (TextView) convertView.findViewById(R.id.tvTelf);
             gv.tv2 = tv;
-            ImageView iv = (ImageView) convertView.findViewById(R.id.ivNum);
-            gv.iv = iv;
             convertView.setTag(gv);
         } else {
             gv = (ViewHolder) convertView.getTag();
         }
-        gv.iv.setTag(position);
-        addListener(gv.iv, position);
-        gv.tv1.setText(valores.get(position));
-        gv.tv2.setText("lo otro "+valores.get(position));
+        gv.tv2.setText("Tlf: "+valores.get(position));
         return convertView;
     }
 
-    private void addListener(ImageView iv, final int position){
-        iv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Snackbar.make(v, "Detalles del contacto"+position, Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                //Toast.makeText(ctx, "flor "+position, Toast.LENGTH_LONG).show();
-            }
-        });
-    }
+
 }
