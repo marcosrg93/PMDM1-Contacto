@@ -1,9 +1,6 @@
 package com.rubino.pmdmcontacto;
 
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,23 +10,17 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.v4.view.ViewCompat.animate;
-
 public class Principal extends AppCompatActivity {
 
-    private ClaseAdaptador cl;
-    private AdaptadorContacto cl2;
-    private List<String> lista;
-    private List<Contacto> lista2;
+
+    private AdaptadorContacto cl;
+    private List<Contacto> lista;
     private FloatingActionButton fab;
     private Contacto c;
 
@@ -124,24 +115,16 @@ public class Principal extends AppCompatActivity {
 
         final ListView lv = (ListView) findViewById(R.id.lvContactos);
         lista = new ArrayList<>();
-        lista2 = new ArrayList<>();
+        lista = cl.getListaContactos(this);
 
-        long id = 0;
+        cl = new AdaptadorContacto(this, R.layout.elementos_lv, lista);
 
-        lista2 = cl2.getListaContactos(this);
+        lv.setAdapter(cl);
+        lv.setTag(lista);
 
-
-
-
-        cl2 = new AdaptadorContacto(this, R.layout.elementos_lv, lista2);
-
-
-        lv.setAdapter(cl2);
-
-        lv.setTag(lista2);
-
-
+        //Comprueba la posición en el listview para ocultarlo o no según la acción realizada
         lv.setOnScrollListener(new OnScrollUpDownListener(lv, 8, scrollAction));
+
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -149,6 +132,7 @@ public class Principal extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
         lv.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
