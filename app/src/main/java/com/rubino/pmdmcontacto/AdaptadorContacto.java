@@ -79,22 +79,13 @@ public class AdaptadorContacto extends ArrayAdapter<Contacto>{
             gv = (ViewHolder) convertView.getTag();
         }
         gv.iv.setTag(position);
-        addListener(gv.iv, position);
         gv.tv1.setText(valores.get(position).getNombre());
+
         gv.tv2.setText(getListaTelefonos(ctx,valores.get(position).getId()).get(0));
         return convertView;
     }
 
-    private void addListener(ImageView iv, final int position){
-        iv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Snackbar.make(v, "Imagen " + position, Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                //Toast.makeText(ctx, "flor "+position, Toast.LENGTH_LONG).show();
-            }
-        });
-    }
+
 
 
     public static List<Contacto> getListaContactos(Context contexto){
