@@ -1,6 +1,7 @@
 package com.rubino.pmdmcontacto;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
@@ -96,8 +97,9 @@ public class  Principal extends AppCompatActivity {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Snackbar.make(view, "Pulsado encima", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                //Snackbar.make(view, "Pulsado encima", Snackbar.LENGTH_LONG)
+                      //  .setAction("Action", null).show();
+                detalles(position);
             }
         });
 
@@ -247,6 +249,31 @@ public class  Principal extends AppCompatActivity {
                 });
         alert.setNegativeButton(R.string.dial_cancel, null);
         alert.show();
+    }
+
+
+
+    public  void detalles(final int posicion){
+        AlertDialog.Builder alert= new AlertDialog.Builder(this);
+        alert.setTitle(R.string.dial_det_Titulo);
+        LayoutInflater inflater= LayoutInflater.from(this);
+        final View vista = inflater.inflate(R.layout.dialogo_detalles, null);
+        final TextView tv,tv1;
+        String nom,tel;
+
+        nom=lista.get(posicion).getNombre();
+        tel=cl.getListaTelefonos(this, lista.get(posicion).getId()).get(0);
+
+        tv = (TextView) vista.findViewById(R.id.tvDNom);
+        tv1 = (TextView) vista.findViewById(R.id.tvDTel);
+
+        tv.setText(nom);
+        tv1.setText(tel);
+
+        alert.setView(vista);
+        alert.setNegativeButton(R.string.dial_det_back, null);
+        alert.show();
+
     }
 
     public void ordenaNombresAsc(){

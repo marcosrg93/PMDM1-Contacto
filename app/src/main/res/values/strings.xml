@@ -18,4 +18,6 @@
     <string name="dial_insert">Insertar</string>
     <string name="dial_cancel">Cancelar</string>
 
+    <string name="dial_det_Titulo">Detalles</string>
+    <string name="dial_det_back">Atrás</string>
 </resources>

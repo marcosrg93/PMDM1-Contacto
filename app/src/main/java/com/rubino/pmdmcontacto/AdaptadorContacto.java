@@ -8,7 +8,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,17 +37,6 @@ public class AdaptadorContacto extends ArrayAdapter<Contacto>{
         this.valores = objects;//lista de valores
         this.lInflator = (LayoutInflater) context.getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE);
-    }
-
-    public boolean editar(int position, Contacto cont) {
-        try {
-            valores.remove(position);
-            valores.add(cont);
-            this.notifyDataSetChanged();
-        } catch (IndexOutOfBoundsException e) {
-            return false;
-        }
-        return true;
     }
 
 
