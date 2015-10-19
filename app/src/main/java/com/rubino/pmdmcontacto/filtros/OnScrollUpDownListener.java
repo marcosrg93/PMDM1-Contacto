@@ -1,4 +1,4 @@
-package com.rubino.pmdmcontacto;
+package com.rubino.pmdmcontacto.filtros;
 
 /**
  * Created by marco on 06/10/2015.

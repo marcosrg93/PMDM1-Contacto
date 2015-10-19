@@ -1,4 +1,6 @@
-package com.rubino.pmdmcontacto;
+package com.rubino.pmdmcontacto.datos.contacto;
+
+import com.rubino.pmdmcontacto.datos.contacto.Contacto;
 
 import java.util.Comparator;
 

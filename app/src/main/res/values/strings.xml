@@ -12,11 +12,15 @@
     <string name="str_borrar">Borrar</string>
     //Dialogo insertar
     <string name="dial_Titulo">Añadir</string>
-    <string name="dial_Titulo_ed">Editar</string>
+
     <string name="dial_nom">Nombre</string>
     <string name="dial_tel">Telefono</string>
+    <string name="dial_tel2">Telefono 2</string>
+    <string name="dial_tel3">Telefono 3</string>
     <string name="dial_insert">Insertar</string>
     <string name="dial_cancel">Cancelar</string>
+
+    <string name="dial_Titulo_ed">Editar</string>
 
     <string name="dial_det_Titulo">Detalles</string>
     <string name="dial_det_back">Atrás</string>

@@ -4,22 +4,28 @@ package com.rubino.pmdmcontacto;
  * Created by marco on 06/10/2015.
  */
 
+import android.app.AlertDialog;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.ContactsContract;
+import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.rubino.pmdmcontacto.datos.contacto.Contacto;
+import com.rubino.pmdmcontacto.datos.contacto.GestionContactos;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AdaptadorContacto extends ArrayAdapter<Contacto>{
 
+    private GestionContactos gc;
+    private Contacto c;
     private Context ctx;
     private int res;
     private LayoutInflater lInflator;
@@ -39,6 +45,176 @@ public class AdaptadorContacto extends ArrayAdapter<Contacto>{
                 (Context.LAYOUT_INFLATER_SERVICE);
     }
 
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        //1
+        ViewHolder vh = new ViewHolder();
+        Contacto valor = valores.get(position);
+        if(convertView==null){
+            convertView = lInflator.inflate(res, null);
+            TextView tv = (TextView) convertView.findViewById(R.id.tvNombre);
+            vh.tv1 = tv;
+            tv = (TextView) convertView.findViewById(R.id.tvTelf);
+            vh.tv2 = tv;
+            ImageView iv = (ImageView) convertView.findViewById(R.id.ivNum);
+            vh.iv = iv;
+            convertView.setTag(vh);
+        } else {
+            vh = (ViewHolder) convertView.getTag();
+        }
+        vh.iv.setTag(position);
+        vh.tv1.setText(valores.get(position).getNombre());
+
+        int numContactos = valor.getlTelf().size();
+        if(numContactos>0) {
+            vh.tv2.setText(valor.getlTelf().get(0));
+            if (numContactos == 1) {
+                vh.iv.setImageResource(R.drawable.ic_no);
+                muestraDet(vh.iv, position);
+            } else {
+                vh.iv.setImageResource(R.drawable.ic_yes);
+                muestraDet(vh.iv, position);
+            }
+        }
+
+        return convertView;
+    }
+
+    public void muestraDet(ImageView iv, final int pos) {
+        iv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                detalles(pos);
+            }
+        });
+    }
+
+    public  void dgInsert(){
+        AlertDialog.Builder alert= new AlertDialog.Builder(ctx);
+        alert.setTitle(R.string.dial_Titulo);
+        LayoutInflater inflater= LayoutInflater.from(ctx);
+        final View vista = inflater.inflate(R.layout.dialogo_insert, null);
+        alert.setView(vista);
+        alert.setPositiveButton(R.string.dial_insert,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        long id = valores.size() - 1;
+                        EditText etN, etTel,etTel2,etTel3;
+                        etN = (EditText) vista.findViewById(R.id.etInsertN);
+                        etTel = (EditText) vista.findViewById(R.id.etInsertT);
+                        etTel2 = (EditText) vista.findViewById(R.id.etInsertT2);
+                        etTel3 = (EditText) vista.findViewById(R.id.etInsertT3);
+
+                        List<String> telf = new ArrayList<String>();
+                        Contacto c = new Contacto(id, etN.getText().toString(), telf);
+                        c.addlTelf(etTel.getText().toString());
+                        c.addlTelf(etTel2.getText().toString());
+                        c.addlTelf(etTel3.getText().toString());
+                        valores.add(c);
+                        notifyDataSetChanged();
+
+                    }
+                });
+        alert.setNegativeButton(R.string.dial_cancel, null);
+        alert.show();
+    }
+
+    public  void dgEdit(final int posicion){
+        AlertDialog.Builder alert= new AlertDialog.Builder(ctx);
+        alert.setTitle(R.string.dial_Titulo_ed);
+        Contacto c = new Contacto();
+        LayoutInflater inflater= LayoutInflater.from(ctx);
+        final View vista = inflater.inflate(R.layout.dialogo_edit, null);
+
+        Contacto valor = valores.get(posicion);
+        EditText etN, etTel,etTel2,etTel3;
+        etN = (EditText) vista.findViewById(R.id.editN);
+        etTel = (EditText) vista.findViewById(R.id.editTelf);
+        etTel2 = (EditText) vista.findViewById(R.id.editTelf2);
+        etTel3 = (EditText) vista.findViewById(R.id.editTelf3);
+
+        etN.setText(valores.get(posicion).getNombre());
+
+        int numContactos = valor.getlTelf().size();
+        if(numContactos>0) {
+            if (numContactos == 1) {
+                etTel.setText(valor.getlTelf().get(0));
+                etTel2.setVisibility(View.INVISIBLE);
+                etTel3.setVisibility(View.INVISIBLE);
+            } else  if (numContactos == 2){
+                etTel.setText(valor.getlTelf().get(0));
+                etTel2.setText(valor.getlTelf().get(1));
+                etTel3.setVisibility(View.INVISIBLE);
+            }else  if (numContactos == 3){
+                etTel.setText(valor.getlTelf().get(0));
+                etTel2.setText(valor.getlTelf().get(1));
+                etTel3.setText(valor.getlTelf().get(2));
+            }
+        }
+
+        alert.setView(vista);
+        alert.setPositiveButton(R.string.dial_insert,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        EditText etN, etTel,etTel2,etTel3;
+                        etN = (EditText) vista.findViewById(R.id.editN);
+                        etTel = (EditText) vista.findViewById(R.id.editTelf);
+                        etTel2 = (EditText) vista.findViewById(R.id.editTelf2);
+                        etTel3 = (EditText) vista.findViewById(R.id.editTelf3);
+
+                        valores.remove(posicion);
+                        List<String> telf = new ArrayList<String>();
+                        telf.add(etTel.getText().toString());
+                        telf.add(etTel2.getText().toString());
+                        telf.add(etTel3.getText().toString());
+                        Contacto c = new Contacto(posicion, etN.getText().toString(), telf);
+                        valores.add(c);
+                        notifyDataSetChanged();
+                        Log.v(" EDITO datos", "" + c.toString());
+                    }
+                });
+        alert.setNegativeButton(R.string.dial_cancel, null);
+        alert.show();
+        notifyDataSetChanged();
+    }
+
+
+    public  void detalles(final int posicion){
+        android.app.AlertDialog.Builder alert= new android.app.AlertDialog.Builder(ctx);
+        alert.setTitle(R.string.dial_det_Titulo);
+        LayoutInflater inflater= LayoutInflater.from(ctx);
+        final View vista = inflater.inflate(R.layout.dialogo_detalles, null);
+        final TextView tvNom,tvTel,tvTel2,tvTel3,tv4,tv5;
+        Contacto valor = valores.get(posicion);
+
+        tvNom = (TextView) vista.findViewById(R.id.tvDNom);
+        tvTel = (TextView) vista.findViewById(R.id.tvDTel);
+        tvTel2 = (TextView) vista.findViewById(R.id.tvDTel2);
+        tvTel3 = (TextView) vista.findViewById(R.id.tvDTel3);
+        tv4 = (TextView) vista.findViewById(R.id.textView4);
+        tv5 = (TextView) vista.findViewById(R.id.textView5);
+
+        tvNom.setText(valores.get(posicion).getNombre());
+        int numContactos = valor.getlTelf().size();
+        if(numContactos>0) {
+            if (numContactos == 1) {
+                tvTel.setText(valor.getlTelf().get(0));
+                tv4.setVisibility(View.INVISIBLE);
+                tv5.setVisibility(View.INVISIBLE);
+            } else  if (numContactos == 2){
+                tvTel.setText(valor.getlTelf().get(0));
+                tvTel2.setText(valor.getlTelf().get(1));
+                tv5.setVisibility(View.INVISIBLE);
+            }else  if (numContactos == 3){
+                tvTel.setText(valor.getlTelf().get(0));
+                tvTel2.setText(valor.getlTelf().get(1));
+                tvTel3.setText(valor.getlTelf().get(2));
+            }
+        }
+        alert.setView(vista);
+        alert.setNegativeButton(R.string.dial_det_back, null);
+        alert.show();
+    }
 
     public boolean borrar(int position) {
         try {
@@ -50,68 +226,6 @@ public class AdaptadorContacto extends ArrayAdapter<Contacto>{
         return true;
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        //1
-        ViewHolder gv = new ViewHolder();
-        if(convertView==null){
-            convertView = lInflator.inflate(res, null);
-            TextView tv = (TextView) convertView.findViewById(R.id.tvNombre);
-            gv.tv1 = tv;
-            tv = (TextView) convertView.findViewById(R.id.tvTelf);
-            gv.tv2 = tv;
-            ImageView iv = (ImageView) convertView.findViewById(R.id.ivNum);
-            gv.iv = iv;
-            convertView.setTag(gv);
-        } else {
-            gv = (ViewHolder) convertView.getTag();
-        }
-        gv.iv.setTag(position);
-        gv.tv1.setText(valores.get(position).getNombre());
-
-        gv.tv2.setText(getListaTelefonos(ctx,valores.get(position).getId()).get(0));
-        return convertView;
-    }
-
-
-
-
-    public static List<Contacto> getListaContactos(Context contexto){
-        Uri uri = ContactsContract.Contacts.CONTENT_URI;
-        String proyeccion[] = null;
-        String seleccion = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ? and " +
-                ContactsContract.Contacts.HAS_PHONE_NUMBER + "= ?";
-        String argumentos[] = new String[]{"1","1"};
-        String orden = ContactsContract.Contacts.DISPLAY_NAME + " collate localized asc";
-        Cursor cursor = contexto.getContentResolver().query(uri, proyeccion, seleccion, argumentos, orden);
-        int indiceId = cursor.getColumnIndex(ContactsContract.Contacts._ID);
-        int indiceNombre = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-        List<Contacto> lista = new ArrayList<>();
-        Contacto contacto;
-        while(cursor.moveToNext()){
-            contacto = new Contacto();
-            contacto.setId(cursor.getLong(indiceId));
-            contacto.setNombre(cursor.getString(indiceNombre));
-            lista.add(contacto);
-        }
-        return lista;
-    }
-
-
-    public static List<String> getListaTelefonos(Context contexto, long id){
-        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        String proyeccion[] = null;
-        String seleccion = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
-        String argumentos[] = new String[]{id+""};
-        String orden = ContactsContract.CommonDataKinds.Phone.NUMBER;
-        Cursor cursor = contexto.getContentResolver().query(uri, proyeccion, seleccion, argumentos, orden);
-        int indiceNumero = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-        List<String> lista = new ArrayList<>();
-        String numero;
-        while(cursor.moveToNext()){
-            numero = cursor.getString(indiceNumero);
-            lista.add(numero);
-        }
-        return lista;
-    }
 }
+
+

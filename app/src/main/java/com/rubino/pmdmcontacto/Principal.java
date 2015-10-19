@@ -1,16 +1,19 @@
 package com.rubino.pmdmcontacto;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -19,26 +22,29 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.rubino.pmdmcontacto.datos.contacto.Contacto;
+import com.rubino.pmdmcontacto.datos.contacto.GestionContactos;
+import com.rubino.pmdmcontacto.datos.contacto.OrdenaNombresAsc;
+import com.rubino.pmdmcontacto.datos.contacto.OrdenaNombresDes;
+import com.rubino.pmdmcontacto.filtros.OnScrollUpDownListener;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class  Principal extends AppCompatActivity {
+public class  Principal extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
-
-    private AdaptadorContacto cl;
-    private List<Contacto> lista;
+    private AdaptadorContacto ac;
+    private List<Contacto> lContactos;
     private FloatingActionButton fab;
-    private Contacto c;
-    private ImageView iv;
-
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,82 +53,20 @@ public class  Principal extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         init();
     }
-
-    //Inicializamos todos los componentes que llamaremos en el onCreate
-    private void init() {
-        //Floating Action Button
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                dialogo(view);
-            }
-        });
-
-        //Comprobamos la posicion para que se muestre o no
-        OnScrollUpDownListener.Action scrollAction = new OnScrollUpDownListener.Action() {
-
-            @Override
-            public void up() {
-                fab.hide();
-            }
-
-            @Override
-            public void down() {
-                fab.show();
-            }
-
-        };
-
-        iv = (ImageView)findViewById(R.id.ivNum);
-
-
-        final ListView lv = (ListView) findViewById(R.id.lvContactos);
-        lista = new ArrayList<>();
-        lista = cl.getListaContactos(this);
-
-        cl = new AdaptadorContacto(this, R.layout.elementos_lv, lista);
-
-        lv.setAdapter(cl);
-        lv.setTag(lista);
-
-        //Comprueba la posición en el listview para ocultarlo o no según la acción realizada
-        lv.setOnScrollListener(new OnScrollUpDownListener(lv, 8, scrollAction));
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Snackbar.make(view, "Pulsado encima", Snackbar.LENGTH_LONG)
-                      //  .setAction("Action", null).show();
-                detalles(position);
-            }
-        });
-
-        lv.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                return false;
-            }
-        });
-
-
-        registerForContextMenu(lv);
-
-    }
-
-
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_principal, menu);
+
+       /* SearchManager searchManager = (SearchManager) getSystemService( Context.SEARCH_SERVICE );
+        SearchView searchView = (SearchView) menu.findItem(R.id.menu_item_search).getActionView();
+
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(this);*/
         return true;
     }
 
@@ -133,26 +77,20 @@ public class  Principal extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+
         if (id == R.id.mn_ordenaMayor) {
             ordenaNombresAsc();
-            cl.notifyDataSetChanged();
-            cl = new AdaptadorContacto(Principal.this, R.layout.elementos_lv, lista);
-            ListView lv = (ListView) findViewById(R.id.lvContactos);
-            lv.setAdapter(cl);
+            ac.notifyDataSetChanged();
             return true;
         }
         if (id == R.id.mn_ordenaMenor) {
             ordenaNombresDes();
-            cl.notifyDataSetChanged();
-            cl = new AdaptadorContacto(Principal.this, R.layout.elementos_lv, lista);
-            ListView lv = (ListView) findViewById(R.id.lvContactos);
-            lv.setAdapter(cl);
+            ac.notifyDataSetChanged();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
-
 
     //Creamos el menu contextual que nos dará las opciones de editar y borrar de cada Contacto
     @Override
@@ -171,128 +109,104 @@ public class  Principal extends AppCompatActivity {
         int posicion = vistaInfo.position;
 
         if(id==R.id.mn_editar){
-            dialogoEditar(posicion);
+            ac.dgEdit(posicion);
             return true;
         } else if(id==R.id.mn_borrar){
-            cl.borrar(posicion);
+            ac.borrar(posicion);
             return true;
         }
         return super.onContextItemSelected(item);
     }
 
+    //---------------------------------------------------------------------------------------------------------------------//
+    //Inicializamos todos los componentes que llamaremos en el onCreate
+    private void init() {
+        //Floating Action Button
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View view) {
+                ac.dgInsert();
+            }
+        });
 
-    public  void dialogo(View v){
-        AlertDialog.Builder alert= new AlertDialog.Builder(this);
-        alert.setTitle(R.string.dial_Titulo);
-        LayoutInflater inflater= LayoutInflater.from(this);
-        final View vista = inflater.inflate(R.layout.dialogo_insert, null);
-        alert.setView(vista);
-        alert.setPositiveButton(R.string.dial_insert,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        long id = lista.size() - 1;
-                        EditText et1, et2;
-                        et1 = (EditText) vista.findViewById(R.id.etInsertN);
-                        et2 = (EditText) vista.findViewById(R.id.etInsertT);
+        //Comprobamos la posicion para que se muestre o no
+        OnScrollUpDownListener.Action scrollAction = new OnScrollUpDownListener.Action() {
+            @Override
+            public void up() {
+                fab.hide();
+            }
 
-                        Contacto c = new Contacto(id, et1.getText().toString(), et2.getText().toString());
-                        lista.add(c);
-                        cl.notifyDataSetChanged();
-                        cl = new AdaptadorContacto(Principal.this, R.layout.elementos_lv, lista);
-                        ListView lv = (ListView) findViewById(R.id.lvContactos);
-                        lv.setAdapter(cl);
-                        Log.v("Inserto datos", "" + c.toString());
-                    }
-                });
-        alert.setNegativeButton(R.string.dial_cancel, null);
-        alert.show();
-    }
+            @Override
+            public void down() {
+                fab.show();
+            }
+        };
 
-    public  void dialogoEditar( final int posicion){
-        AlertDialog.Builder alert= new AlertDialog.Builder(this);
-        alert.setTitle(R.string.dial_Titulo_ed);
+        listView = (ListView) findViewById(R.id.lvContactos);
+        lContactos = GestionContactos.getLista(this);
 
-        //cargamos contacto
-        Contacto c = new Contacto();
-        //cargamos vista
-        LayoutInflater inflater= LayoutInflater.from(this);
-        final View vista = inflater.inflate(R.layout.dialogo_edit, null);
-        final EditText et,et1;
-        String nom,tel;
+        ac = new AdaptadorContacto(this, R.layout.elementos_lv, lContactos);
 
-        nom=lista.get(posicion).getNombre();
-        tel=cl.getListaTelefonos(this, lista.get(posicion).getId()).get(0);
-        c.setNombre(lista.get(posicion).getNombre());
-        c.setTelf(cl.getListaTelefonos(this, lista.get(posicion).getId()).get(0));
+        listView.setTextFilterEnabled(true);
 
-        et = (EditText) vista.findViewById(R.id.editN);
-        et1 = (EditText) vista.findViewById(R.id.editTelf);
-        Log.v(" Obtengo datos",""+c.toString());
-        et.setText(nom);
-        et1.setText(tel);
-        alert.setView(vista);
-        alert.setPositiveButton(R.string.dial_insert,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        long id = lista.size()-1;
-                        EditText et1, et2;
-                        et1 = (EditText) vista.findViewById(R.id.editN);
-                        et2 = (EditText) vista.findViewById(R.id.editTelf);
+        listView.setAdapter(ac);
 
-                        lista.remove(posicion);
-                        Contacto c = new Contacto(posicion,et1.getText().toString(), et2.getText().toString());
-                        lista.add(c);
-                        cl.notifyDataSetChanged();
-                        Log.v(" EDITO datos",""+c.toString());
-                    }
-                });
-        alert.setNegativeButton(R.string.dial_cancel, null);
-        alert.show();
-    }
+        listView.setTag(lContactos);
 
 
 
-    public  void detalles(final int posicion){
-        AlertDialog.Builder alert= new AlertDialog.Builder(this);
-        alert.setTitle(R.string.dial_det_Titulo);
-        LayoutInflater inflater= LayoutInflater.from(this);
-        final View vista = inflater.inflate(R.layout.dialogo_detalles, null);
-        final TextView tv,tv1;
-        String nom,tel;
+        listView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return false;
+            }
+        });
 
-        nom=lista.get(posicion).getNombre();
-        tel=cl.getListaTelefonos(this, lista.get(posicion).getId()).get(0);
+        //Comprueba la posición en el listview para ocultarlo o no según la acción realizada
+        listView.setOnScrollListener(new OnScrollUpDownListener(listView, 8, scrollAction));
 
-        tv = (TextView) vista.findViewById(R.id.tvDNom);
-        tv1 = (TextView) vista.findViewById(R.id.tvDTel);
-
-        tv.setText(nom);
-        tv1.setText(tel);
-
-        alert.setView(vista);
-        alert.setNegativeButton(R.string.dial_det_back, null);
-        alert.show();
+        registerForContextMenu(listView);
 
     }
 
+    //---------------------------------------------------------------------------------------------------------------------//
     public void ordenaNombresAsc(){
-        Collections.sort(lista, new OrdenaNombresAsc());
+        Collections.sort(lContactos, new OrdenaNombresAsc());
     }
 
     public void ordenaNombresDes(){
-        Collections.sort(lista, new OrdenaNombresDes());
+        Collections.sort(lContactos, new OrdenaNombresDes());
     }
 
-    //Mostramos la imagen comprobando la versión de android que estamos utilizando
-    //Separando las versiones Pre-Lollipop de las Lollipop o superior
-    public void muestraImagen(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            iv.setImageDrawable(getResources().getDrawable(R.drawable.ic_yes,
-                    getApplicationContext().getTheme()));
-        }else{
-            iv.setImageDrawable(getResources().getDrawable(R.drawable.ic_yes));
+
+    //---------------------------------------------BUSCAR--------------------------------------------------------------------//
+
+    @Override
+    public boolean onQueryTextChange(String newText)
+    {
+
+        // this is your adapter that will be filtered
+       if (TextUtils.isEmpty(newText))
+        {
+
+            listView.clearTextFilter();
+            ac.notifyDataSetChanged();
         }
+        else
+        {
+            listView.setFilterText(newText.toString());
+            ac.notifyDataSetChanged();
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
 
